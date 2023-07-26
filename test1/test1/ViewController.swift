@@ -35,6 +35,11 @@ class ViewController: UIViewController {
     var cache:NSCache<AnyObject, AnyObject>!
     
     var selectedMediaURL: URL? // Property to store the selected mediaURL
+    
+    
+    // Original size of the selected video
+        var originalVideoSize: Int64 = 0
+
 
     
  
@@ -167,6 +172,44 @@ class ViewController: UIViewController {
             }
         }
     }
+    
+    
+    @IBAction func sliderValueChange(_ sender: UISlider) {
+        // Calculate compressed video size based on the slider value
+                let compressionRate = Double(Compression_Rate.value)
+                let compressedVideoSize = calculateCompressedVideoSize(compressionRate: compressionRate)
+
+                // Update Target_Size UILabel with compressed video size
+                Target_Size.text = stringFromByteCount(compressedVideoSize)
+    }
+    
+    // Function to calculate compressed video size based on compression rate
+        func calculateCompressedVideoSize(compressionRate: Double) -> Int64 {
+            let compressedSize = Double(originalVideoSize) * (1.0 - compressionRate)
+            return Int64(compressedSize)
+        }
+
+        // Function to set up the maximum value for the Compression_Rate UISlider
+        func setSliderMaximumValue() {
+            Compression_Rate.maximumValue = Float(originalVideoSize)
+        }
+
+        // Function to get the original video size and set up the UISlider
+        func prepareVideoForCompression() {
+            guard let mediaURL = self.selectedMediaURL else {
+                return
+            }
+
+            // Get the original video size
+            originalVideoSize = getFileSize(for: mediaURL)
+
+            // Update Original_Size UILabel with the original video size
+            Original_Size.text = stringFromByteCount(originalVideoSize)
+
+            // Set up the maximum value for the slider based on the original video size
+            setSliderMaximumValue()
+        }
+    
 }
 
 
@@ -204,6 +247,9 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
                
                // Call the viewAfterVideoIsPicked function and pass the info dictionary
                viewAfterVideoIsPicked(info: info)
+               
+               // Call the function to prepare video for compression
+                prepareVideoForCompression()
                
                print("huy 12333333333333 : \(mediaURL)")
 
