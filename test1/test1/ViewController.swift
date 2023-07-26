@@ -33,6 +33,8 @@ class ViewController: UIViewController {
     
     var videoPlaybackPosition: CGFloat = 0.0
     var cache:NSCache<AnyObject, AnyObject>!
+    
+    var selectedMediaURL: URL? // Property to store the selected mediaURL
 
     
  
@@ -122,49 +124,91 @@ class ViewController: UIViewController {
     //Action for Compress Videos
     
     @IBAction func Compress_Videos(_ sender: Any) {
-        let start = Float(Original_Size.text!)
-        let end   = Float(Target_Size.text!)
+        let fileManager = FileManager.default
         
-
+        guard let documentsFolderURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return
+        }
         
+        // Đường dẫn của thư mục "Compress_video" trong Documents
+        let compressVideoFolderURL = documentsFolderURL.appendingPathComponent("Compress_video")
+        
+        do {
+            // Kiểm tra xem thư mục có tồn tại không
+            if !fileManager.fileExists(atPath: compressVideoFolderURL.path) {
+                // Nếu thư mục không tồn tại, tạo mới
+                try fileManager.createDirectory(at: compressVideoFolderURL, withIntermediateDirectories: true, attributes: nil)
+                print("Đã tạo thư mục Compress_video thành công!")
+            } else {
+                print("Thư mục Compress_video đã tồn tại!")
+            }
+        } catch {
+            print("Lỗi khi tạo thư mục Compress_video: \(error)")
+        }
+        
+        // Sử dụng biến exportPath để truyền đường dẫn của thư mục Compress_video vào các bước xử lý tiếp theo.
+        let exportPath = compressVideoFolderURL.path // ... Đặt đường dẫn cho video sau khi nén ...
+        
+        // Check if a video is selected
+        guard let mediaURL = self.selectedMediaURL else {
+            print("No video selected.")
+            return
+        }
+        
+        // Call compressVideoAndExport function to compress and export the video
+        let renderSize = CGSize(width: 1280, height: 720)
+        compressVideoAndExport(at: mediaURL, exportPath: exportPath, renderSize: renderSize) { success in
+            if success {
+                // Ghi log hoặc xử lý sau khi hoàn thành nén
+                print("Compression and export completed successfully.")
+            } else {
+                // Xử lý khi không thể nén và xuất video
+                print("Compression and export failed.")
+            }
+        }
     }
-    
 }
 
 
-import AVFoundation
-import UIKit
+
 
 extension ViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
 
     // Delegate method of image picker
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
-        picker.dismiss(animated: true, completion: nil)
+           picker.dismiss(animated: true, completion: nil)
+           
+           if let mediaURL = info[.mediaURL] as? URL {
+               
+               // Save the selected mediaURL to the selectedMediaURL property
+               self.selectedMediaURL = mediaURL
 
-        if let mediaURL = info[.mediaURL] as? URL {
-            let asset = AVURLAsset(url: mediaURL)
+               let asset = AVURLAsset(url: mediaURL)
+               
+               // Perform any operations with the asset, e.g., displaying the video, getting video duration, etc.
+               
+               // Example: Display video thumbnail in Img_Layer
+               let imageGenerator = AVAssetImageGenerator(asset: asset)
+               imageGenerator.appliesPreferredTrackTransform = true
+               let time = CMTimeMakeWithSeconds(0.0, preferredTimescale: 600)
+               do {
+                   let cgImage = try imageGenerator.copyCGImage(at: time, actualTime: nil)
+                   let thumbnail = UIImage(cgImage: cgImage)
+                   Img_Layer.image = thumbnail
+               } catch {
+                   print("Error generating thumbnail: \(error)")
+               }
+               
+               // Example: Get video duration in seconds
+               let duration = CMTimeGetSeconds(asset.duration)
+               
+               // Call the viewAfterVideoIsPicked function and pass the info dictionary
+               viewAfterVideoIsPicked(info: info)
+               
+               print("huy 12333333333333 : \(mediaURL)")
 
-            // Perform any operations with the asset, e.g., displaying the video, getting video duration, etc.
-
-            // Example: Display video thumbnail in Img_Layer
-            let imageGenerator = AVAssetImageGenerator(asset: asset)
-            imageGenerator.appliesPreferredTrackTransform = true
-            let time = CMTimeMakeWithSeconds(0.0, preferredTimescale: 600)
-            do {
-                let cgImage = try imageGenerator.copyCGImage(at: time, actualTime: nil)
-                let thumbnail = UIImage(cgImage: cgImage)
-                Img_Layer.image = thumbnail
-            } catch {
-                print("Error generating thumbnail: \(error)")
-            }
-
-            // Example: Get video duration in seconds
-            let duration = CMTimeGetSeconds(asset.duration)
-
-            // Call the viewAfterVideoIsPicked function and pass the info dictionary
-            viewAfterVideoIsPicked(info: info)
-        }
-    }
+           }
+       }
 
     func viewAfterVideoIsPicked(info: [UIImagePickerController.InfoKey: Any]) {
         //Rmoving player if already exists
@@ -231,4 +275,153 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
         formatter.countStyle = .file
         return formatter.string(fromByteCount: byteCount)
     }
+    
+    
+    // Hàm gộp video và nén video
+    func compressVideoAndExport(at mediaURL: URL, exportPath: String, renderSize: CGSize, completion: @escaping (Bool) -> Void) {
+        compress(videoURL: mediaURL, exportVideoPath: exportPath, renderSize: renderSize) { success in
+            if success {
+                // Ghi log hoặc xử lý sau khi hoàn thành nén
+                print("Compression completed successfully.")
+            } else {
+                // Xử lý khi không thể nén
+                print("Compression failed.")
+            }
+            completion(success)
+        }
+    }
+
+
+
+
+    func compress(videoURL: URL, exportVideoPath: String, renderSize: CGSize, completion: @escaping (Bool) -> Void) {
+        let videoAsset = AVURLAsset(url: videoURL)
+        let videoTrackArray = videoAsset.tracks(withMediaType: .video)
+        let audioTrackArray = videoAsset.tracks(withMediaType: .audio)
+
+        guard videoTrackArray.count > 0, audioTrackArray.count > 0 else {
+            completion(false)
+            return
+        }
+
+        let videoAssetTrack = videoTrackArray[0]
+        let audioAssetTrack = audioTrackArray[0]
+
+        let outputURL = URL(fileURLWithPath: exportVideoPath)
+        let videoWriter: AVAssetWriter
+        do {
+            videoWriter = try AVAssetWriter(outputURL: outputURL, fileType: .mp4)
+        } catch {
+            print("Error creating AVAssetWriter: \(error)")
+            completion(false)
+            return
+        }
+
+        let videoSettings = videoSettings(renderSize: renderSize)
+        let videoWriterInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings)
+        videoWriterInput.expectsMediaDataInRealTime = false
+        videoWriterInput.transform = videoAssetTrack.preferredTransform
+        videoWriter.add(videoWriterInput)
+
+        let audioSettings = audioSettings()
+        let audioWriterInput = AVAssetWriterInput(mediaType: .audio, outputSettings: audioSettings)
+        audioWriterInput.expectsMediaDataInRealTime = false
+        videoWriter.add(audioWriterInput)
+
+        let videoReaderOutput = AVAssetReaderTrackOutput(track: videoAssetTrack, outputSettings: nil)
+        let videoReader: AVAssetReader
+        do {
+            videoReader = try AVAssetReader(asset: videoAsset)
+        } catch {
+            print("Error creating AVAssetReader: \(error)")
+            completion(false)
+            return
+        }
+
+        videoReader.add(videoReaderOutput)
+
+        let audioReaderOutput = AVAssetReaderTrackOutput(track: audioAssetTrack, outputSettings: nil)
+        let audioReader: AVAssetReader
+        do {
+            audioReader = try AVAssetReader(asset: videoAsset)
+        } catch {
+            print("Error creating AVAssetReader: \(error)")
+            completion(false)
+            return
+        }
+
+        audioReader.add(audioReaderOutput)
+
+        videoWriter.startWriting()
+        videoReader.startReading()
+        videoWriter.startSession(atSourceTime: .zero)
+
+        let processingVideoQueue = DispatchQueue(label: "processingVideoCompressionQueue")
+
+        videoWriterInput.requestMediaDataWhenReady(on: processingVideoQueue) {
+            while videoWriterInput.isReadyForMoreMediaData {
+                guard let sampleBuffer = videoReaderOutput.copyNextSampleBuffer() else {
+                    videoWriterInput.markAsFinished()
+
+                    if videoReader.status == .completed {
+                        audioReader.startReading()
+                        videoWriter.startSession(atSourceTime: .zero)
+
+                        let processingAudioQueue = DispatchQueue(label: "processingAudioCompressionQueue")
+
+                        audioWriterInput.requestMediaDataWhenReady(on: processingAudioQueue) {
+                            while audioWriterInput.isReadyForMoreMediaData {
+                                guard let sampleBuffer = audioReaderOutput.copyNextSampleBuffer() else {
+                                    audioWriterInput.markAsFinished()
+
+                                    if audioReader.status == .completed {
+                                        videoWriter.finishWriting {
+                                            completion(true)
+                                        }
+                                    }
+                                    return
+                                }
+                                audioWriterInput.append(sampleBuffer)
+                            }
+                        }
+                    }
+                    return
+                }
+                videoWriterInput.append(sampleBuffer)
+            }
+        }
+    }
+
+    func videoSettings(renderSize: CGSize) -> [String: Any] {
+        var compressionSettings: [String: Any] = [:]
+        compressionSettings[AVVideoAverageBitRateKey] = 425000
+
+        var settings: [String: Any] = [:]
+        settings[AVVideoCompressionPropertiesKey] = compressionSettings
+        settings[AVVideoCodecKey] = AVVideoCodecType.h264
+        settings[AVVideoHeightKey] = renderSize.height
+        settings[AVVideoWidthKey] = renderSize.width
+
+        return settings
+    }
+
+    func audioSettings() -> [String: Any] {
+        // Set up the channel layout
+        var channelLayout = AudioChannelLayout()
+        memset(&channelLayout, 0, MemoryLayout<AudioChannelLayout>.size)
+        channelLayout.mChannelLayoutTag = kAudioChannelLayoutTag_Mono
+
+        // Set up a dictionary with our output settings
+        var settings: [String: Any] = [:]
+        settings[AVFormatIDKey] = kAudioFormatMPEG4AAC
+        settings[AVSampleRateKey] = 44100
+        settings[AVNumberOfChannelsKey] = 1
+        settings[AVEncoderBitRateKey] = 96000
+        settings[AVChannelLayoutKey] = NSData(bytes: &channelLayout, length: MemoryLayout<AudioChannelLayout>.size)
+
+        return settings
+    }
+    
+    
+    
 }
