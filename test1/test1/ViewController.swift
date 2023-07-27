@@ -38,7 +38,7 @@ class ViewController: UIViewController {
     
     
     // Original size of the selected video
-        var originalVideoSize: Int64 = 0
+    var originalVideoSize: Int64 = 0
 
 
     
@@ -78,6 +78,7 @@ class ViewController: UIViewController {
         
         print(documentsFolderURL)
         loadViews()
+
     }
     
     func loadViews()
@@ -189,10 +190,7 @@ class ViewController: UIViewController {
             return Int64(compressedSize)
         }
 
-        // Function to set up the maximum value for the Compression_Rate UISlider
-        func setSliderMaximumValue() {
-            Compression_Rate.maximumValue = Float(originalVideoSize)
-        }
+
 
         // Function to get the original video size and set up the UISlider
         func prepareVideoForCompression() {
@@ -206,8 +204,12 @@ class ViewController: UIViewController {
             // Update Original_Size UILabel with the original video size
             Original_Size.text = stringFromByteCount(originalVideoSize)
 
-            // Set up the maximum value for the slider based on the original video size
-            setSliderMaximumValue()
+
+            // Set the initial value of the slider to its maximum
+                    Compression_Rate.value = Compression_Rate.maximumValue
+
+                    // Call the sliderValueChange to update the Target_Size label based on the initial slider value
+                    sliderValueChange(Compression_Rate)
         }
     
 }
