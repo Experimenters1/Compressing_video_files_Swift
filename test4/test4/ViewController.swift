@@ -176,7 +176,7 @@ class ViewController: UIViewController {
     
     
     @IBAction func Compressing_75(_ sender: Any) {
-        
+        Compressing_25.setImage(UIImage(named: "work-in-progress"), for: .normal)
         toggleOrientation_75()
         Data_transmission_75()
 
@@ -190,7 +190,7 @@ class ViewController: UIViewController {
     func Data_transmission_75() {
         if isPercent_70 {
             Compressing_75.setImage(UIImage(named: "img1"), for: .normal)
-            Compressing_25.setImage(UIImage(named: "work-in-progress"), for: .normal)
+            
                     mySize.width = 320
                     mySize.height = 240
             
@@ -215,7 +215,7 @@ class ViewController: UIViewController {
     func Data_transmission_25() {
         if isPercent_25 {
             Compressing_25.setImage(UIImage(named: "img2"), for: .normal)
-            Compressing_75.setImage(UIImage(named: "work-in-progress 1"), for: .normal)
+      
             
                     mySize.width = 960
                     mySize.height = 540
@@ -232,6 +232,7 @@ class ViewController: UIViewController {
     }
     
     @IBAction func Compressing_25(_ sender: Any) {
+        Compressing_75.setImage(UIImage(named: "work-in-progress 1"), for: .normal)
         toggleOrientation_25()
         Data_transmission_25()
     }
