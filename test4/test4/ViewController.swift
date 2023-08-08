@@ -31,6 +31,8 @@ class ViewController: UIViewController {
     
     // Khai báo biến videoURL1 dưới kiểu dữ liệu URL
      var videoURL1: URL?
+    
+    var compressedURL: URL?
         
     
     
@@ -107,26 +109,55 @@ class ViewController: UIViewController {
         // Sử dụng biến exportPath để truyền đường dẫn của thư mục Compress_video vào các bước xử lý tiếp theo.
         let exportPath = compressVideoFolderURL.path // ... Đặt đường dẫn cho video sau khi nén ...
         
-        // Check if videoURL1 is nil before using it
-               guard let videoURL = videoURL1 else {
-                   print("No video selected.")
-                   return
-               }
-        
-        // Call compressVideoAndExport function to compress and export the video
-        let renderSize = CGSize(width: 640, height: 480)
-        
-        let compressedURL = documentsFolderURL.appendingPathComponent("compressedVideo.mp4")
-        
-        // Call the compress function with the selected video URL
-        compress(videoPath: videoURL, exportVideoPath: compressedURL, renderSize: CGSize(width: 640, height: 480)) { success in
-            if success {
-                print("Video compression successful.")
-            } else {
-                print("Video compression failed.")
+        // Gọi hàm showFileNameInputDialog
+            showFileNameInputDialog { [weak self] compressedURL in
+                guard let self = self else { return }
+
+                // Tiến hành nén video và truyền compressedURL vào hàm compress
+                if let videoURL = self.videoURL1 {
+                    let renderSize = CGSize(width: 640, height: 480)
+                    self.compress(videoPath: videoURL, exportVideoPath: compressedURL, renderSize: renderSize) { success in
+                        if success {
+                            print("Video compression successful.")
+                        } else {
+                            print("Video compression failed.")
+                        }
+                    }
+                }
             }
-        }
     }
+    
+    
+    func showFileNameInputDialog(completion: @escaping (URL) -> Void) {
+        let alertController = UIAlertController(title: "Nhập tên và định dạng", message: nil, preferredStyle: .alert)
+        alertController.addTextField { textField in
+            textField.placeholder = "Tên tập tin"
+        }
+        alertController.addAction(UIAlertAction(title: "Hủy", style: .cancel, handler: nil))
+        
+        let saveAction = UIAlertAction(title: "Lưu", style: .default) { [weak self] _ in
+            guard let textField = alertController.textFields?.first, let fileName = textField.text else {
+                return
+            }
+            
+            let formattedFileName = fileName + ".mp4"
+            
+            guard let documentsFolderURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+                return
+            }
+            
+            let compressedURL = documentsFolderURL.appendingPathComponent(formattedFileName)
+            self?.compressedURL = compressedURL
+            
+            // Gọi completion và truyền compressedURL
+            completion(compressedURL)
+        }
+        
+        alertController.addAction(saveAction)
+        
+        present(alertController, animated: true, completion: nil)
+    }
+
     
 
 }
@@ -139,7 +170,7 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
                if let videoURL = info[.mediaURL] as? URL {
            
                    
-                   print("huy 466r63637 \(videoURL)")
+       
                    
                    self.videoURL1 = videoURL
                   
