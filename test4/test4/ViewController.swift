@@ -84,30 +84,6 @@ class ViewController: UIViewController {
     
     //Action for crop video
     @IBAction func Compress_Videos(_ sender: Any) {
-        let fileManager = FileManager.default
-        
-        guard let documentsFolderURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            return
-        }
-        
-        // Đường dẫn của thư mục "Compress_video" trong Documents
-        let compressVideoFolderURL = documentsFolderURL.appendingPathComponent("Compress_video")
-        
-        do {
-            // Kiểm tra xem thư mục có tồn tại không
-            if !fileManager.fileExists(atPath: compressVideoFolderURL.path) {
-                // Nếu thư mục không tồn tại, tạo mới
-                try fileManager.createDirectory(at: compressVideoFolderURL, withIntermediateDirectories: true, attributes: nil)
-                print("Đã tạo thư mục Compress_video thành công!")
-            } else {
-                print("Thư mục Compress_video đã tồn tại!")
-            }
-        } catch {
-            print("Lỗi khi tạo thư mục Compress_video: \(error)")
-        }
-        
-        // Sử dụng biến exportPath để truyền đường dẫn của thư mục Compress_video vào các bước xử lý tiếp theo.
-        let exportPath = compressVideoFolderURL.path // ... Đặt đường dẫn cho video sau khi nén ...
         
         // Gọi hàm showFileNameInputDialog
             showFileNameInputDialog { [weak self] compressedURL in
@@ -134,30 +110,49 @@ class ViewController: UIViewController {
             textField.placeholder = "Tên tập tin"
         }
         alertController.addAction(UIAlertAction(title: "Hủy", style: .cancel, handler: nil))
-        
+
         let saveAction = UIAlertAction(title: "Lưu", style: .default) { [weak self] _ in
-            guard let textField = alertController.textFields?.first, let fileName = textField.text else {
+            guard let textField = alertController.textFields?.first, var fileName = textField.text else {
                 return
             }
-            
-            let formattedFileName = fileName + ".mp4"
-            
-            guard let documentsFolderURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-                return
+
+            var fileCount = 0
+            let fileManager = FileManager.default
+            let documentsFolderURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+            let compressVideoFolderURL = documentsFolderURL.appendingPathComponent("Compress_video")
+
+            do {
+                if !fileManager.fileExists(atPath: compressVideoFolderURL.path) {
+                    try fileManager.createDirectory(at: compressVideoFolderURL, withIntermediateDirectories: true, attributes: nil)
+                    print("Đã tạo thư mục Compress_video thành công!")
+                } else {
+                    print("Thư mục Compress_video đã tồn tại!")
+                }
+            } catch {
+                print("Lỗi khi tạo thư mục Compress_video: \(error)")
             }
-            
-            let compressedURL = documentsFolderURL.appendingPathComponent(formattedFileName)
+
+            var compressedURL: URL
+
+            repeat {
+                let formattedFileName = fileCount == 0 ? fileName : "\(fileName)_\(fileCount)"
+                let formattedFileNameWithExtension = formattedFileName + ".mp4"
+                compressedURL = compressVideoFolderURL.appendingPathComponent(formattedFileNameWithExtension)
+
+                if !fileManager.fileExists(atPath: compressedURL.path) {
+                    break
+                }
+
+                fileCount += 1
+            } while true
+
             self?.compressedURL = compressedURL
-            
-            // Gọi completion và truyền compressedURL
             completion(compressedURL)
         }
-        
+
         alertController.addAction(saveAction)
-        
         present(alertController, animated: true, completion: nil)
     }
-
     
 
 }
