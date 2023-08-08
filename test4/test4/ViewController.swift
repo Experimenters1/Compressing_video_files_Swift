@@ -24,6 +24,7 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var Compressing_75: UIButton!
     
+    @IBOutlet weak var Compressing_25: UIButton!
     
     
     var player: AVPlayer!
@@ -40,6 +41,8 @@ class ViewController: UIViewController {
     var mySize: CGSize = CGSize(width: 0, height: 0) // Khởi tạo mySize với giá trị mặc định
     
     var isPercent_70 = false
+    
+    var isPercent_25 = false
         
     
     
@@ -69,7 +72,7 @@ class ViewController: UIViewController {
           Compress_Videos.isHidden         = true
         
         Compressing_75.isHidden = true
-        
+        Compressing_25.isHidden = true
         
         player = AVPlayer()
 
@@ -183,7 +186,6 @@ class ViewController: UIViewController {
     // Hàm để thay đổi giá trị của isLandscape
     func toggleOrientation_75() {
         isPercent_70 = !isPercent_70
-        Data_transmission_75()
     }
     
     func Data_transmission_75() {
@@ -202,7 +204,35 @@ class ViewController: UIViewController {
         }
     }
     
+    // Hàm để thay đổi giá trị của isLandscape
+    func toggleOrientation_25() {
+        isPercent_25 = !isPercent_25
+     
+    }
+    
+    func Data_transmission_25() {
+        if isPercent_25 {
+            Compressing_25.setImage(UIImage(named: "img2"), for: .normal)
+                    mySize.width = 960
+                    mySize.height = 540
+            
+         
+            
+            Compress_Videos.isHidden = false
+            
 
+        } else {
+            Compressing_25.setImage(UIImage(named: "work-in-progress"), for: .normal)
+            Compress_Videos.isHidden = true
+            
+        }
+    }
+    
+    @IBAction func Compressing_25(_ sender: Any) {
+        toggleOrientation_25()
+        Data_transmission_25()
+    }
+    
 }
 
 
@@ -249,6 +279,7 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
 
 //        //unhide buttons and view after video selection
         Compressing_75.isHidden = false
+        Compressing_25.isHidden = false
        
     }
         
