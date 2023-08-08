@@ -179,8 +179,7 @@ class ViewController: UIViewController {
         
         toggleOrientation_75()
         Data_transmission_75()
-//        mySize.width = 320
-//        mySize.height = 240
+
     }
     
     // Hàm để thay đổi giá trị của isLandscape
@@ -191,12 +190,15 @@ class ViewController: UIViewController {
     func Data_transmission_75() {
         if isPercent_70 {
             Compressing_75.setImage(UIImage(named: "img1"), for: .normal)
+            Compressing_25.setImage(UIImage(named: "work-in-progress"), for: .normal)
                     mySize.width = 320
                     mySize.height = 240
             
+            
+            
             Compress_Videos.isHidden = false
             
-
+           
         } else {
             Compressing_75.setImage(UIImage(named: "work-in-progress 1"), for: .normal)
             Compress_Videos.isHidden = true
@@ -213,11 +215,12 @@ class ViewController: UIViewController {
     func Data_transmission_25() {
         if isPercent_25 {
             Compressing_25.setImage(UIImage(named: "img2"), for: .normal)
+            Compressing_75.setImage(UIImage(named: "work-in-progress 1"), for: .normal)
+            
                     mySize.width = 960
                     mySize.height = 540
             
-         
-            
+           
             Compress_Videos.isHidden = false
             
 
