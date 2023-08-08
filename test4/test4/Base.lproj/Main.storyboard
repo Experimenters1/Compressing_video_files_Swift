@@ -20,7 +20,7 @@
                                 <rect key="frame" x="0.0" y="59" width="393" height="759"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BgF-F4-Q6l">
-                                        <rect key="frame" x="8" y="64" width="377" height="611"/>
+                                        <rect key="frame" x="8" y="64" width="377" height="540"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </imageView>
                                     <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8qA-1u-aog">
@@ -43,6 +43,21 @@
                                             <action selector="Compress_Videos:" destination="BYZ-38-t0r" eventType="touchUpInside" id="4l1-JO-8EC"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fYQ-9c-eL8">
+                                        <rect key="frame" x="53" y="611" width="88" height="78"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" image="work-in-progress"/>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zo3-QY-Jch">
+                                        <rect key="frame" x="264" y="611" width="88" height="78"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" image="work-in-progress 1"/>
+                                        <connections>
+                                            <action selector="Compressing_75:" destination="BYZ-38-t0r" eventType="touchUpInside" id="3NL-CN-nxo"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" systemColor="systemBrownColor"/>
                             </view>
@@ -58,6 +73,7 @@
                     </view>
                     <connections>
                         <outlet property="Compress_Videos" destination="73B-Wm-c65" id="8jE-Lh-mPO"/>
+                        <outlet property="Compressing_75" destination="zo3-QY-Jch" id="yqs-mY-m1g"/>
                         <outlet property="Img_Layer" destination="BgF-F4-Q6l" id="pKj-8l-gdA"/>
                         <outlet property="layoutContainer" destination="JA3-JM-6eZ" id="4iW-yB-sFa"/>
                         <outlet property="selectButton" destination="8qA-1u-aog" id="ldl-AL-DdP"/>
@@ -65,10 +81,12 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="292" y="4"/>
+            <point key="canvasLocation" x="290.83969465648852" y="3.5211267605633805"/>
         </scene>
     </scenes>
     <resources>
+        <image name="work-in-progress" width="64" height="64"/>
+        <image name="work-in-progress 1" width="64" height="64"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

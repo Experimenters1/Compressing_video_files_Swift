@@ -22,6 +22,9 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var Compress_Videos: UIButton!
     
+    @IBOutlet weak var Compressing_75: UIButton!
+    
+    
     
     var player: AVPlayer!
     var cache:NSCache<AnyObject, AnyObject>!
@@ -33,6 +36,10 @@ class ViewController: UIViewController {
      var videoURL1: URL?
     
     var compressedURL: URL?
+    
+    var mySize: CGSize = CGSize(width: 0, height: 0) // Khởi tạo mySize với giá trị mặc định
+    
+    var isPercent_70 = false
         
     
     
@@ -60,6 +67,8 @@ class ViewController: UIViewController {
         
         //Hiding buttons and view on load
           Compress_Videos.isHidden         = true
+        
+        Compressing_75.isHidden = true
         
         
         player = AVPlayer()
@@ -91,7 +100,15 @@ class ViewController: UIViewController {
 
                 // Tiến hành nén video và truyền compressedURL vào hàm compress
                 if let videoURL = self.videoURL1 {
-                    let renderSize = CGSize(width: 640, height: 480)
+//                    let renderSize = CGSize(width: 640, height: 480)
+                    
+//                    let renderSize = CGSize(width: 320, height: 240)
+                    
+//                    let renderSize = CGSize(width: 960, height: 540)
+                    
+                    
+                    let renderSize = self.mySize // Sử dụng giá trị của mySize
+                    
                     self.compress(videoPath: videoURL, exportVideoPath: compressedURL, renderSize: renderSize) { success in
                         if success {
                             print("Video compression successful.")
@@ -154,6 +171,37 @@ class ViewController: UIViewController {
         present(alertController, animated: true, completion: nil)
     }
     
+    
+    @IBAction func Compressing_75(_ sender: Any) {
+        
+        toggleOrientation_75()
+        Data_transmission_75()
+//        mySize.width = 320
+//        mySize.height = 240
+    }
+    
+    // Hàm để thay đổi giá trị của isLandscape
+    func toggleOrientation_75() {
+        isPercent_70 = !isPercent_70
+        Data_transmission_75()
+    }
+    
+    func Data_transmission_75() {
+        if isPercent_70 {
+            Compressing_75.setImage(UIImage(named: "img1"), for: .normal)
+                    mySize.width = 320
+                    mySize.height = 240
+            
+            Compress_Videos.isHidden = false
+            
+
+        } else {
+            Compressing_75.setImage(UIImage(named: "work-in-progress 1"), for: .normal)
+            Compress_Videos.isHidden = true
+            
+        }
+    }
+    
 
 }
 
@@ -199,8 +247,8 @@ extension ViewController: UIImagePickerControllerDelegate, UINavigationControlle
             playerLayer.removeFromSuperlayer()
         }
 
-        //unhide buttons and view after video selection
-        Compress_Videos.isHidden = false
+//        //unhide buttons and view after video selection
+        Compressing_75.isHidden = false
        
     }
         
